@@ -2,8 +2,12 @@ package com.dermenji.service;
 
 import com.dermenji.database.DatabaseClass;
 import com.dermenji.model.Comment;
+import com.dermenji.model.ErrorMessage;
 import com.dermenji.model.Message;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +22,20 @@ public class CommentService {
     }
 
     public Comment getComment (long messageId, long commentId) {
+
+        ErrorMessage errorMessage = new ErrorMessage("Not found", 404, "google.com");
+        Response response = Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
+
+        Message message = messages.get(messageId);
+        if (message == null){
+            throw new WebApplicationException(response);
+        }
         Map<Long, Comment> comments = messages.get(messageId).getComments();
-        return comments.get(commentId);
+        Comment comment = comments.get(commentId);
+        if (comment == null){
+            throw new NotFoundException(response);
+        }
+        return comment;
     }
 
     public Comment addComment(long messageId, Comment comment) {
